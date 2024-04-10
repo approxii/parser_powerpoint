@@ -1,8 +1,9 @@
 from pptx import Presentation
+from itertools import groupby
 import json
-from urllib.parse import unquote
 
 list_of_notes = []
+list_of_notes_address = []
 
 class parser:
     def get_notes(ppt):
@@ -11,19 +12,30 @@ class parser:
                 if not shape.has_text_frame:
                     continue
                 for paragraph in shape.text_frame.paragraphs:
-                    somde_str = str()
                     for run in paragraph.runs:
                         note_address = run.hyperlink.address
-                        somde_str += run.text
-                        if note_address != None:
-                            note = unquote(note_address) + ':' + ' ' + '"' + somde_str +  '"'
+                        if (note_address != None):
+                            list_of_notes_address.append(note_address)
                         else:
                             continue
-                        list_of_notes.append(note)
-                        for i in range(1,len(list_of_notes)):
-                            if list_of_notes[i] == list_of_notes[i - 1]:
-                                list_of_notes.remove(i)
-                        print(note)
+        new_list_of_notes_address = [el for el, _ in groupby(list_of_notes_address)]
+        #print(new_list_of_notes_address)
+
+        notes = []
+        for page, slide in enumerate(ppt.slides):
+            temp = []
+            for shape in slide.shapes:
+                if shape.has_text_frame and shape.text.strip():
+                    temp.append(shape.text)
+            notes.append(temp)
+        #print(notes)
+
+        for i in range(0, max(len(new_list_of_notes_address), len(notes))):
+            if i < len(new_list_of_notes_address):
+                list_of_notes.append(new_list_of_notes_address[i])
+            if i < len(notes):
+                list_of_notes.append(notes[i])
+        print(list_of_notes)
         return list_of_notes
 
     def save_to_json():
@@ -32,7 +44,6 @@ class parser:
 
     def get_pres_name():
         print('Enter the name of your presentation: ')
-        
 
 
 parser.get_pres_name()
@@ -40,6 +51,5 @@ presentation_name = input()
 presentation = Presentation(presentation_name + '.pptx')
 
 parser.get_notes(presentation)
-print(list_of_notes)
 parser.save_to_json()
 
