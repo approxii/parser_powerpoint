@@ -2,8 +2,8 @@ from pptx import Presentation
 from itertools import groupby
 import json
 
-list_of_notes = []
-list_of_notes_address = []
+list_of_notes = [] #Массив закладок
+list_of_notes_address = [] #Массив адресов закладок
 
 class parser:
     #Получение массива адресов страниц
