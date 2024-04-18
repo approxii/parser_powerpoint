@@ -1,15 +1,22 @@
 from pptx import Presentation
 from itertools import groupby
 import json
+from io import BytesIO
 
 list_of_notes = []
 list_of_notes_address = []
 
-class parser:    
+class parser: 
+    def __init__(self):
+        self.ppt = None
+
+    def load(self, file) -> None:
+        self.ppt = Presentation(file)
+    
     #Получение массива адресов страниц
-    def get_notes(ppt):
+    def update(ppt):
         #Получение адресов закладок/страниц
-        for slide in ppt.slides:
+        for slide in enumerate(ppt.slides):
             for shape in slide.shapes:
                 if not shape.has_text_frame:
                     continue
@@ -65,11 +72,19 @@ class parser:
     def get_pres_name():
         print('Enter the name of your presentation: ')
 
+    def save_to_bytes(self) -> BytesIO:
+        if not self.ppt:
+            raise ValueError("pptx файл не загружен.")
+        output = BytesIO()
+        self.workbook.save(output)
+        output.seek(0)
+        return output
+
 #Ввод имени презентации(без ".pptx")
-parser.get_pres_name()
-presentation_name = input()
-presentation = Presentation(presentation_name + '.pptx')
+#parser.get_pres_name()
+#presentation_name = input()
+#presentation = Presentation(presentation_name + '.pptx')
 
 #Парсинг презентации и сохранение в json формат
-parser.get_notes(presentation)
-parser.save_to_json()
+#parser.update(presentation)
+#parser.save_to_json()
