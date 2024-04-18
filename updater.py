@@ -2,10 +2,10 @@ from pptx import Presentation
 from itertools import groupby
 import json
 
-list_of_notes = [] #Массив закладок
-list_of_notes_address = [] #Массив адресов закладок
+list_of_notes = []
+list_of_notes_address = []
 
-class parser:
+class parser:    
     #Получение массива адресов страниц
     def get_notes(ppt):
         #Получение адресов закладок/страниц
@@ -23,29 +23,39 @@ class parser:
         #Удаление повторяющихся адресов, возникающих из-за пробелов и других символов
         new_list_of_notes_address = [el for el, _ in groupby(list_of_notes_address)]
 
-        #Получение текста со слайдов
+        notes = parser.get_text_from_slides(ppt)
+        parser.merging_lists(new_list_of_notes_address, notes, list_of_notes)
+
+    #Получение текста со слайдов
+    def get_text_from_slides(ppt):
         notes = []
         for page, slide in enumerate(ppt.slides):
             temp = []
             for shape in slide.shapes:
                 if shape.has_text_frame and shape.text.strip():
-                    temp.append(shape.text) 
-            #Удаление символов табуляции и перехода на другую строку из массива      
-            temp = [x.replace('\n', ' ') for x in temp]
-            temp = [x.replace('\x0b', ' ') for x in temp]
-            temp = [x.replace('\r', ' ') for x in temp]
-            temp = [x.replace('\t', ' ') for x in temp]
+                    temp.append(shape.text)       
+            temp = parser.check_slash_n(temp)
             notes.append(temp)
-        print(notes)
+        return notes
 
-        #Объединение массива адресов и массива текстов в один
-        for i in range(0, max(len(new_list_of_notes_address), len(notes))):
-            if i < len(new_list_of_notes_address):
-                list_of_notes.append(new_list_of_notes_address[i])
-            if i < len(notes):
-                list_of_notes.append(notes[i])
-        return list_of_notes
+    #Объединение массива адресов и массива текстов в один
+    def merging_lists(list1, list2, list3):
+        for i in range(0, max(len(list1), len(list2))):
+            if i < len(list1):
+                list3.append(list1[i])
+            if i < len(list2):
+                list3.append(list2[i])
+        print(list3)
+        return list3
 
+    #Удаление символов табуляции и перехода на другую строку из массива
+    def check_slash_n(list):
+        list = [x.replace('\n', ' ') for x in list]
+        list = [x.replace('\x0b', ' ') for x in list]
+        list = [x.replace('\r', ' ') for x in list]
+        list = [x.replace('\t', ' ') for x in list]
+        return list
+    
     #Сохранение массива в json файл
     def save_to_json():
         with open('notes.json', 'w', encoding='utf-8') as file:
@@ -63,4 +73,3 @@ presentation = Presentation(presentation_name + '.pptx')
 #Парсинг презентации и сохранение в json формат
 parser.get_notes(presentation)
 parser.save_to_json()
-
