@@ -1,5 +1,4 @@
-from core.services.powerpoint import PowerPointService as Service
+from updater import parser as Service
 
-#need to fix
 async def get_service() -> Service:
     return Service()
